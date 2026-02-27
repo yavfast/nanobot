@@ -331,7 +331,8 @@ class AgentLoop:
                 current_message=msg.content, channel=channel, chat_id=chat_id,
             )
             final_content, _, all_msgs = await self._run_agent_loop(messages)
-            self._save_turn(session, all_msgs, 1 + len(history))
+            # skip: 1 (system) + len(history) + 1 ([Runtime Context] — regenerated each turn)
+            self._save_turn(session, all_msgs, 2 + len(history))
             self.sessions.save(session)
             return OutboundMessage(channel=channel, chat_id=chat_id,
                                   content=final_content or "Background task completed.")
@@ -426,7 +427,8 @@ class AgentLoop:
         if final_content is None:
             final_content = "I've completed processing but have no response to give."
 
-        self._save_turn(session, all_msgs, 1 + len(history))
+        # skip: 1 (system) + len(history) + 1 ([Runtime Context] — regenerated each turn)
+        self._save_turn(session, all_msgs, 2 + len(history))
         self.sessions.save(session)
 
         if (mt := self.tools.get("message")) and isinstance(mt, MessageTool) and mt._sent_in_turn:
